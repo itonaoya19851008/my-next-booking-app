@@ -63,6 +63,9 @@ const BookingPage: React.FC = () => {
 
   const [patientName,setPatientName] = useState<string>('');
   const [patientPhone,setPatientPhone] = useState<string>('');
+
+  const [userId,setUserId] = useState<string|null>(null);
+  const [userActiveBookings,setUserActiveBookings] = useState<Appointment[]>([]);
   // 管理者側と同じ固定の時間帯
   const ALL_POSSIBLE_TIME_SLOTS = [
     "09:00",
@@ -112,6 +115,28 @@ const BookingPage: React.FC = () => {
     setError(null);
   };
 
+  useEffect(()=>{
+    const fetchUserData = async ()=>{
+      const {data:{user}} = await supabase.auth.getUser();
+      if(user){
+        setUserId(user.id);
+
+        const {data:activeBookings,error} = await supabase
+        .from('appointments')
+        .select('*')
+        .eq('user_id',user.id)
+        .eq('status','active');
+
+        if(error){
+          console.error('既存の予約取得エラー',error);
+          setError('既存の予約情報の取得に失敗しました。');
+          return;
+        }
+        setUserActiveBookings(activeBookings||[]);
+      }
+    }
+    fetchUserData();
+  },[])
   const fetchTimeSlotsForSelectedDate = useCallback(async () => {
     if (!selectedDate) {
       setFetchedTimeSlots([]);
@@ -224,7 +249,10 @@ const BookingPage: React.FC = () => {
       setError("日付と時間を選択してください。");
       return;
     }
-    
+    if(userActiveBookings.length>0){
+      setError('すでに進行中の予約があります。新しい予約は作成できません。');
+      return;
+    }
     if(!isSlotAvailable(selectedTime,isFirstVisit)){
       setError('選択された時間帯は、ご希望の種別では予約できません。');
       return;
