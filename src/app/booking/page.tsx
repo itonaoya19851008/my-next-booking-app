@@ -192,7 +192,7 @@ const BookingPage: React.FC = () => {
       setExistingAppointments(appointmentsData as Appointment[]);
       console.log("予約枠設定データ:", timeslotsData);
       console.log("既存の予約データ:", appointmentsData);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError("予約枠の取得中にエラーが発生しました" + err.message);
       console.error("予約枠フェッチエラー:", err);
     } finally {

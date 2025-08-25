@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, use } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { supabase } from "../../../../lib/supabaseClient";
 import { useRouter } from "next/navigation";
 
@@ -34,7 +34,7 @@ import {
   addMonths,
   isSameUtcMinute,
 } from "@/app/utils/dateUtils";
-import { time } from "console";
+
 
 interface AdminAppointment {
   id: string;
@@ -178,8 +178,9 @@ const AdminBookingPage: React.FC = () => {
         });
 
       setAllAppointments(appointmentsWithEmails);
-    } catch (err: any) {
-      setError(`データの読み込み中にエラーが発生しました:${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(`データの読み込み中にエラーが発生しました:${message}`);
       console.error("管理者予約履歴フェッチエラー:", err);
     } finally {
       setLoadingPage(false);
@@ -190,39 +191,39 @@ const AdminBookingPage: React.FC = () => {
   useEffect(() => {
     fetchAppointments();
   }, [fetchAppointments]);
-  const handleCancelBooking = async (
-    appointmentId: string,
-    appoinmentTime: string
-  ) => {
-    if (
-      !window.confirm(
-        `予約日時:${formatDateForDisplay(
-          fromUtcToLocalDate(appoinmentTime)
-        )}${fromUtcToLocalDate(appoinmentTime).toLocaleDateString("ja-JP", {
-          hour: "2-digit",
-          minute: "2-digit",
-        })}の予約を本当にキャンセルしますか？`
-      )
-    ) {
-      return;
-    }
-    setError(null);
-    setLoadingPage(true);
-    try {
-      const { error } = await supabase
-        .from("appointments")
-        .update({ status: "canceled" })
-        .eq("id", appointmentId);
+  // const handleCancelBooking = async (
+  //   appointmentId: string,
+  //   appoinmentTime: string
+  // ) => {
+  //   if (
+  //     !window.confirm(
+  //       `予約日時:${formatDateForDisplay(
+  //         fromUtcToLocalDate(appoinmentTime)
+  //       )}${fromUtcToLocalDate(appoinmentTime).toLocaleDateString("ja-JP", {
+  //         hour: "2-digit",
+  //         minute: "2-digit",
+  //       })}の予約を本当にキャンセルしますか？`
+  //     )
+  //   ) {
+  //     return;
+  //   }
+  //   setError(null);
+  //   setLoadingPage(true);
+  //   try {
+  //     const { error } = await supabase
+  //       .from("appointments")
+  //       .update({ status: "canceled" })
+  //       .eq("id", appointmentId);
 
-      if (error) throw error;
-      alert("予約が正常にキャンセルされました！");
-      fetchAppointments();
-    } catch (err: any) {
-      setError(`予約のキャンセル中にエラーが発生しました:${err.message}`);
-      console.error("予約キャンセルエラー", err);
-      setLoadingPage(false);
-    }
-  };
+  //     if (error) throw error;
+  //     alert("予約が正常にキャンセルされました！");
+  //     fetchAppointments();
+  //   } catch (err: unknown) {
+  //     setError(`予約のキャンセル中にエラーが発生しました:${err.message}`);
+  //     console.error("予約キャンセルエラー", err);
+  //     setLoadingPage(false);
+  //   }
+  // };
 
   const ALL_POSSIBLE_TIME_SLOTS = [
     "09:00",
@@ -414,7 +415,7 @@ const AdminBookingPage: React.FC = () => {
       }
 
       const userManagementResult = await userManagementResponse.json();
-      userIdForBooking = userManagementResult.userId;
+      userIdForBooking = userManagementResult.userId as string;
 
       if (editingAppointment) {
         const { error: updateError } = await supabase
@@ -454,8 +455,9 @@ const AdminBookingPage: React.FC = () => {
         handleCloseFormPopup();
         fetchAppointments();
       }
-    } catch (err: any) {
-      setError(`予約の保存中にエラーが発生しました:${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(`予約の保存中にエラーが発生しました:${message}`);
       console.error("管理者予約保存エラー:", err);
     } finally {
       setLoadingPage(false);

@@ -63,7 +63,7 @@ const MyBookingPage: React.FC = () => {
 
       setAppointments(fetchedAppointments as Appointment[]);
       console.log("ユーザーの予約履歴:", fetchedAppointments);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(`予約履歴の読み込み中にエラーが発生しました:${err.message}`);
       console.error("予約履歴フェッチエラー", err);
     } finally {
@@ -137,7 +137,7 @@ const MyBookingPage: React.FC = () => {
 
       alert("予約が正常にキャンセルされました!");
       fecthMyAppointments();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(`予約のキャンセル中にエラーが発生しました:${err.message}`);
       console.error("予約キャンセルエラー", err);
       setLoading(false);
